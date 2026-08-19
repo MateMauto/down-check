@@ -7,7 +7,7 @@ name = "down-check"
 version = "0.3.0"
 description = "A lightweight CLI that tells you whether the services you care about are down."
 readme = "README.md"
-license = "0BSD"
+license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.10"
 keywords = ["cli", "status", "outage", "uptime", "monitoring"]

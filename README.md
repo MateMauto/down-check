@@ -155,5 +155,4 @@ Adding one is a few lines:
 
 ## License
 
-Zero-clause BSD ([0BSD](LICENSE)) — public-domain-equivalent. Use it, ship it, sell it,
-no attribution required.
+[MIT](LICENSE) — use it, ship it, sell it. Just keep the copyright notice.
