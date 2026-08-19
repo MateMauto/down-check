@@ -1,0 +1,261 @@
+# Built-in service catalog for down-check.
+#
+# Every entry is a status page that exposes a machine-readable endpoint.
+# Fields:
+#   id            unique slug (stored in your selection file)
+#   name          shown in the list and the results table
+#   category      grouping in `down-check list`
+#   api           endpoint polled by `down-check check`
+#   page          human status page, printed when something looks off
+#   kind          "statuspage" (default, Atlassian schema), or one of the
+#                 bespoke feeds: "aws", "gcp", "azure", "slack", "statusio"
+#   reports       slug for istheservicedown.com/problems/<slug> — the crowd-
+#                 sourced fallback down-check actually queries (optional)
+#   downdetector  slug for downdetector.com/status/<slug>/ — printed as a link
+#                 for you to open, never fetched (optional)
+
+# ── Dev tools ────────────────────────────────────────────────────────────────
+- id: github
+  name: GitHub
+  category: Dev tools
+  api: https://www.githubstatus.com/api/v2/status.json
+  page: https://www.githubstatus.com
+  reports: github
+  downdetector: github
+
+- id: gitlab
+  name: GitLab
+  category: Dev tools
+  kind: statusio
+  api: https://api.status.io/1.0/status/5b36dc6502d06804c08349f7
+  page: https://status.gitlab.com
+  downdetector: gitlab
+
+- id: npm
+  name: npm
+  category: Dev tools
+  api: https://status.npmjs.org/api/v2/status.json
+  page: https://status.npmjs.org
+  downdetector: npm
+
+- id: pypi
+  name: PyPI
+  category: Dev tools
+  api: https://status.python.org/api/v2/status.json
+  page: https://status.python.org
+
+- id: atlassian
+  name: Jira / Atlassian
+  category: Dev tools
+  api: https://status.atlassian.com/api/v2/status.json
+  page: https://status.atlassian.com
+  downdetector: jira
+
+- id: sentry
+  name: Sentry
+  category: Dev tools
+  api: https://status.sentry.io/api/v2/status.json
+  page: https://status.sentry.io
+
+- id: grafana
+  name: Grafana Cloud
+  category: Dev tools
+  api: https://status.grafana.com/api/v2/status.json
+  page: https://status.grafana.com
+
+# ── Cloud & hosting ──────────────────────────────────────────────────────────
+- id: aws
+  name: AWS
+  category: Cloud & hosting
+  kind: aws
+  api: https://health.aws.amazon.com/public/currentevents
+  page: https://health.aws.amazon.com/health/status
+  downdetector: aws-amazon-web-services
+
+- id: gcp
+  name: Google Cloud
+  category: Cloud & hosting
+  kind: gcp
+  api: https://status.cloud.google.com/incidents.json
+  page: https://status.cloud.google.com
+  reports: google-cloud
+  downdetector: google-cloud
+
+- id: azure
+  name: Azure
+  category: Cloud & hosting
+  kind: azure
+  api: https://azure.status.microsoft/en-us/status/feed/
+  page: https://azure.status.microsoft/en-us/status
+  reports: microsoft-azure
+  downdetector: windows-azure
+
+- id: cloudflare
+  name: Cloudflare
+  category: Cloud & hosting
+  api: https://www.cloudflarestatus.com/api/v2/status.json
+  page: https://www.cloudflarestatus.com
+  reports: cloudflare
+  downdetector: cloudflare
+
+- id: vercel
+  name: Vercel
+  category: Cloud & hosting
+  api: https://www.vercel-status.com/api/v2/status.json
+  page: https://www.vercel-status.com
+  downdetector: vercel
+
+- id: netlify
+  name: Netlify
+  category: Cloud & hosting
+  api: https://www.netlifystatus.com/api/v2/status.json
+  page: https://www.netlifystatus.com
+  downdetector: netlify
+
+- id: digitalocean
+  name: DigitalOcean
+  category: Cloud & hosting
+  api: https://status.digitalocean.com/api/v2/status.json
+  page: https://status.digitalocean.com
+  downdetector: digitalocean
+
+- id: render
+  name: Render
+  category: Cloud & hosting
+  api: https://status.render.com/api/v2/status.json
+  page: https://status.render.com
+
+- id: fly
+  name: Fly.io
+  category: Cloud & hosting
+  api: https://status.flyio.net/api/v2/status.json
+  page: https://status.flyio.net
+
+- id: supabase
+  name: Supabase
+  category: Cloud & hosting
+  api: https://status.supabase.com/api/v2/status.json
+  page: https://status.supabase.com
+
+- id: mongodb
+  name: MongoDB Atlas
+  category: Cloud & hosting
+  api: https://status.mongodb.com/api/v2/status.json
+  page: https://status.mongodb.com
+
+# ── AI ───────────────────────────────────────────────────────────────────────
+- id: anthropic
+  name: Anthropic
+  category: AI
+  api: https://status.anthropic.com/api/v2/status.json
+  page: https://status.anthropic.com
+  downdetector: anthropic
+
+- id: openai
+  name: OpenAI
+  category: AI
+  api: https://status.openai.com/api/v2/status.json
+  page: https://status.openai.com
+  downdetector: openai
+
+- id: cursor
+  name: Cursor
+  category: AI
+  api: https://status.cursor.com/api/v2/status.json
+  page: https://status.cursor.com
+  downdetector: cursor
+
+# ── Communication ────────────────────────────────────────────────────────────
+- id: slack
+  name: Slack
+  category: Communication
+  kind: slack
+  api: https://status.slack.com/api/v2.0.0/current
+  page: https://slack-status.com
+  reports: slack
+  downdetector: slack
+
+- id: discord
+  name: Discord
+  category: Communication
+  api: https://discordstatus.com/api/v2/status.json
+  page: https://discordstatus.com
+  reports: discord
+  downdetector: discord
+
+- id: zoom
+  name: Zoom
+  category: Communication
+  api: https://status.zoom.us/api/v2/status.json
+  page: https://status.zoom.us
+  reports: zoom
+  downdetector: zoom
+
+- id: twilio
+  name: Twilio
+  category: Communication
+  api: https://status.twilio.com/api/v2/status.json
+  page: https://status.twilio.com
+  downdetector: twilio
+
+# ── Productivity ─────────────────────────────────────────────────────────────
+- id: linear
+  name: Linear
+  category: Productivity
+  api: https://linearstatus.com/api/v2/status.json
+  page: https://linearstatus.com
+  downdetector: linear
+
+- id: figma
+  name: Figma
+  category: Productivity
+  api: https://status.figma.com/api/v2/status.json
+  page: https://status.figma.com
+  downdetector: figma
+
+- id: dropbox
+  name: Dropbox
+  category: Productivity
+  api: https://status.dropbox.com/api/v2/status.json
+  page: https://status.dropbox.com
+  reports: dropbox
+  downdetector: dropbox
+
+- id: asana
+  name: Asana
+  category: Productivity
+  api: https://status.asana.com/api/v2/status.json
+  page: https://status.asana.com
+  downdetector: asana
+
+# ── Payments & commerce ──────────────────────────────────────────────────────
+- id: stripe
+  name: Stripe
+  category: Payments & commerce
+  api: https://www.stripestatus.com/api/v2/status.json
+  page: https://www.stripestatus.com
+  downdetector: stripe
+
+- id: shopify
+  name: Shopify
+  category: Payments & commerce
+  api: https://www.shopifystatus.com/api/v2/status.json
+  page: https://www.shopifystatus.com
+  downdetector: shopify
+
+# ── Media & social ───────────────────────────────────────────────────────────
+- id: twitch
+  name: Twitch
+  category: Media & social
+  api: https://status.twitch.com/api/v2/status.json
+  page: https://status.twitch.com
+  reports: twitch
+  downdetector: twitch
+
+- id: reddit
+  name: Reddit
+  category: Media & social
+  api: https://www.redditstatus.com/api/v2/status.json
+  page: https://www.redditstatus.com
+  reports: reddit
+  downdetector: reddit
