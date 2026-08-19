@@ -19,6 +19,8 @@ class Service:
     api: str
     page: str
     kind: str = "statuspage"
+    # For kind "html": {status: [phrase, ...]} matched against the page banner.
+    match: dict[str, list[str]] | None = None
     reports: str | None = None       # istheservicedown.com slug — checked
     downdetector: str | None = None  # downdetector.com slug — linked only
 

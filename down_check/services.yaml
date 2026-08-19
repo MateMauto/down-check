@@ -8,7 +8,10 @@
 #   api           endpoint polled by `down-check check`
 #   page          human status page, printed when something looks off
 #   kind          "statuspage" (default, Atlassian schema), or one of the
-#                 bespoke feeds: "aws", "gcp", "azure", "slack", "statusio"
+#                 bespoke feeds: "aws", "gcp", "azure", "slack", "statusio",
+#                 "instatus", "meta", "html"
+#   match         only for kind "html": phrases to look for in the page banner,
+#                 grouped by the status they mean. No match means UNKNOWN.
 #   reports       slug for istheservicedown.com/problems/<slug> — the crowd-
 #                 sourced fallback down-check actually queries (optional)
 #   downdetector  slug for downdetector.com/status/<slug>/ — printed as a link
@@ -98,6 +101,13 @@
   reports: cloudflare
   downdetector: cloudflare
 
+- id: akamai
+  name: Akamai
+  category: Cloud & hosting
+  api: https://www.akamaistatus.com/api/v2/status.json
+  page: https://www.akamaistatus.com
+  downdetector: akamai
+
 - id: vercel
   name: Vercel
   category: Cloud & hosting
@@ -165,6 +175,71 @@
   page: https://status.cursor.com
   downdetector: cursor
 
+- id: perplexity
+  name: Perplexity
+  category: AI
+  kind: instatus
+  api: https://status.perplexity.com/summary.json
+  page: https://status.perplexity.com
+  downdetector: perplexity
+
+- id: grok
+  name: Grok (xAI)
+  category: AI
+  kind: html
+  api: https://status.x.ai/grok-com
+  page: https://status.x.ai
+  match:
+    ok: ["Service fully operational", "We are not aware of any issues"]
+    degraded: ["degraded performance", "partial outage"]
+    down: ["major outage", "service disruption"]
+
+- id: mistral
+  name: Mistral AI
+  category: AI
+  kind: html
+  api: https://status.mistral.ai/
+  page: https://status.mistral.ai
+  match:
+    ok: ["All systems operational"]
+    degraded: ["degraded performance", "partial outage", "under maintenance"]
+    down: ["major outage", "full outage"]
+
+- id: deepseek
+  name: DeepSeek
+  category: AI
+  kind: html
+  api: https://status.deepseek.com/
+  page: https://status.deepseek.com
+  match:
+    ok: ["Everything is running smoothly", "operating as expected"]
+    degraded: ["degraded performance", "partial outage", "some systems"]
+    down: ["major outage", "all systems down"]
+
+- id: cohere
+  name: Cohere
+  category: AI
+  api: https://status.cohere.com/api/v2/status.json
+  page: https://status.cohere.com
+
+- id: groq
+  name: Groq
+  category: AI
+  api: https://groqstatus.com/api/v2/status.json
+  page: https://groqstatus.com
+
+- id: fireworks
+  name: Fireworks AI
+  category: AI
+  api: https://status.fireworks.ai/api/v2/status.json
+  page: https://status.fireworks.ai
+
+- id: replicate
+  name: Replicate
+  category: AI
+  api: https://replicatestatus.com/api/v2/status.json
+  page: https://replicatestatus.com
+
 # ── Communication ────────────────────────────────────────────────────────────
 - id: slack
   name: Slack
@@ -199,6 +274,15 @@
   downdetector: twilio
 
 # ── Productivity ─────────────────────────────────────────────────────────────
+- id: gworkspace
+  name: Google Workspace
+  category: Productivity
+  kind: gcp
+  api: https://www.google.com/appsstatus/dashboard/incidents.json
+  page: https://www.google.com/appsstatus/dashboard/
+  reports: gmail
+  downdetector: gmail
+
 - id: linear
   name: Linear
   category: Productivity
@@ -251,6 +335,14 @@
   page: https://status.twitch.com
   reports: twitch
   downdetector: twitch
+
+- id: meta
+  name: Meta Business
+  category: Media & social
+  kind: meta
+  api: https://metastatus.com/data/orgs.json
+  page: https://metastatus.com
+  downdetector: facebook
 
 - id: reddit
   name: Reddit

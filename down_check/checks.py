@@ -113,8 +113,9 @@ async def _gcp(client: httpx.AsyncClient, service: Service) -> Result:
         return _result(service, Status.OK, "No open incidents")
 
     first = open_incidents[0]
-    detail = first.get("external_desc") or "Open incident"
-    detail += _and_more(len(open_incidents))
+    # These descriptions are markdown with hard newlines; flatten for one table cell.
+    raw = first.get("external_desc") or "Open incident"
+    detail = _summarize(raw) + _and_more(len(open_incidents))
 
     high = any(i.get("severity") == "high" for i in open_incidents)
     return _result(service, Status.DOWN if high else Status.DEGRADED, detail)
@@ -152,6 +153,68 @@ async def _statusio(client: httpx.AsyncClient, service: Service) -> Result:
     return _result(service, _STATUSIO.get(code, Status.UNKNOWN), detail)
 
 
+# Instatus reports one word for the whole page.
+_INSTATUS = {
+    "UP": Status.OK,
+    "HASISSUES": Status.DEGRADED,
+    "UNDERMAINTENANCE": Status.DEGRADED,
+}
+
+
+async def _instatus(client: httpx.AsyncClient, service: Service) -> Result:
+    """Read an Instatus `summary.json` — `page.status` is UP / HASISSUES / …"""
+    data = await _get_json(client, service.api)
+    if not isinstance(data, dict):
+        return _result(service, Status.UNKNOWN, "Status page unreachable")
+
+    state = str((data.get("page") or {}).get("status", "")).upper()
+    detail = {"UP": "All systems up", "HASISSUES": "Reported issues",
+              "UNDERMAINTENANCE": "Under maintenance"}.get(state, state or "No description")
+    return _result(service, _INSTATUS.get(state, Status.UNKNOWN), detail)
+
+
+async def _meta(client: httpx.AsyncClient, service: Service) -> Result:
+    """Read metastatus.com's orgs feed — every product carries its own status string."""
+    data = await _get_json(client, service.api)
+    if not isinstance(data, list):
+        return _result(service, Status.UNKNOWN, "Status feed unreachable")
+
+    troubled = [
+        (org.get("name", "?"), svc)
+        for org in data
+        for svc in org.get("services", [])
+        if svc.get("status") and svc["status"] != "No known issues"
+    ]
+    if not troubled:
+        return _result(service, Status.OK, "No known issues")
+
+    org_name, svc = troubled[0]
+    detail = f"{svc['status']} — {org_name}: {svc.get('name', '?')}"
+    return _result(service, Status.DEGRADED, detail + _and_more(len(troubled)))
+
+
+# Pages with no API at all. We read the banner text and, crucially, fall back to
+# UNKNOWN rather than OK when nothing matches — a redesign must never read as "fine".
+_TAGS = re.compile(r"<(script|style)[^>]*>.*?</\1>|<[^>]+>", re.S)
+_BANNER_CHARS = 800
+
+
+async def _html(client: httpx.AsyncClient, service: Service) -> Result:
+    """Match phrases from the catalog against a status page's banner text."""
+    page = await _get_text(client, service.api)
+    if page is None:
+        return _result(service, Status.UNKNOWN, "Status page unreachable")
+
+    banner = " ".join(html.unescape(_TAGS.sub(" ", page)).split())[:_BANNER_CHARS].lower()
+    rules = service.match or {}
+    for level in (Status.DOWN, Status.DEGRADED, Status.OK):  # most severe wins
+        for phrase in rules.get(level.value, []):
+            if phrase.lower() in banner:
+                return _result(service, level, phrase)
+
+    return _result(service, Status.UNKNOWN, "Could not read the page — open the link")
+
+
 async def _azure(client: httpx.AsyncClient, service: Service) -> Result:
     """Read the Azure status RSS feed — it carries one item per active issue."""
     text = await _get_text(client, service.api)
@@ -170,6 +233,13 @@ async def _azure(client: httpx.AsyncClient, service: Service) -> Result:
     return _result(service, Status.DEGRADED, title.strip() + _and_more(len(items)))
 
 
+def _summarize(text: str, limit: int = 110) -> str:
+    """Google's incident text is a markdown essay; keep the first sentence."""
+    flat = " ".join(text.replace("*", "").split()).removeprefix("Summary ")
+    first = flat.split(". ")[0].rstrip(".")
+    return first if len(first) <= limit else first[: limit - 1].rstrip() + "…"
+
+
 def _and_more(count: int) -> str:
     return f" +{count - 1} more" if count > 1 else ""
 
@@ -180,6 +250,9 @@ _CHECKERS = {
     "gcp": _gcp,
     "slack": _slack,
     "statusio": _statusio,
+    "instatus": _instatus,
+    "meta": _meta,
+    "html": _html,
     "azure": _azure,
 }
 

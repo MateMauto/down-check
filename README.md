@@ -108,7 +108,7 @@ rm -rf ~/.down-check                # also forgets which services you picked
 
 Interactive checkbox picker over the built-in catalog.
 
-**Just type** to search by name — with 33 services, filtering to `graf` beats arrowing past 20 rows.
+**Just type** to search by name — with 44 services, filtering to `graf` beats arrowing past 20 rows.
 **Space** toggles, **↑↓** moves, **Backspace** narrows the search, **Enter** saves.
 
 Your selection is stored in `~/.down-check/selection.json`.
@@ -134,12 +134,16 @@ Azure status feed, and Slack's own API.
 plain HTTP requests. This is the fallback for when a status page insists everything is fine and
 your gut says otherwise. Coverage is consumer-leaning: about a third of the catalog has a page there.
 
+**Scraped pages.** A few services (Grok, Mistral, DeepSeek) publish no API, so down-check matches
+phrases against their status banner. If a redesign breaks the match, the result is `UNKNOWN` with a
+link — never a false `OK`.
+
 **Downdetector** is linked, never fetched. It sits behind a bot check that returns 403 to any
 plain HTTP client, so down-check hands you the URL rather than pretending to have read it.
 
 ## The catalog
 
-Everything lives in [`down_check/services.yaml`](down_check/services.yaml) — 33 services across
+Everything lives in [`down_check/services.yaml`](down_check/services.yaml) — 44 services across
 dev tools, cloud & hosting, AI, communication, productivity, payments, and media.
 
 Adding one is a few lines:
@@ -154,8 +158,9 @@ Adding one is a few lines:
   downdetector: my-api   # optional, link only
 ```
 
-`api` defaults to the Atlassian Statuspage schema. Set `kind` to `aws`, `gcp`, `azure`, `slack`, or
-`statusio` for services that don't use it.
+`api` defaults to the Atlassian Statuspage schema. Set `kind` to `aws`, `gcp`, `azure`, `slack`, `statusio`,
+`instatus`, or `meta` for services with their own feed, or `html` (plus a `match:` block of phrases)
+for the handful that publish no API at all.
 
 ## License
 
