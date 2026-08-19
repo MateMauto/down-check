@@ -106,7 +106,11 @@ rm -rf ~/.down-check                # also forgets which services you picked
 
 ### `down-check list`
 
-Interactive checkbox picker over the built-in catalog. **Space** toggles, **↑↓** moves, **Enter** saves.
+Interactive checkbox picker over the built-in catalog.
+
+**Just type** to search by name — with 33 services, filtering to `graf` beats arrowing past 20 rows.
+**Space** toggles, **↑↓** moves, **Backspace** narrows the search, **Enter** saves.
+
 Your selection is stored in `~/.down-check/selection.json`.
 
 ### `down-check check`

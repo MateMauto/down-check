@@ -32,7 +32,7 @@ console = Console()
 
 @app.command("list")
 def list_services() -> None:
-    """Pick the services you care about. Space toggles, Enter saves."""
+    """Pick the services you care about. Type to search, space toggles, Enter saves."""
     catalog = load_catalog()
     already = set(load_selection())
 
@@ -44,7 +44,14 @@ def list_services() -> None:
             for s in services
         ]
 
-    picked = questionary.checkbox("Services to check:", choices=choices).ask()
+    picked = questionary.checkbox(
+        "Services to check:",
+        choices=choices,
+        # Typing filters the list by name — the catalog is too long to arrow through.
+        use_search_filter=True,
+        use_jk_keys=False,  # j/k would be swallowed by the filter
+        instruction="(type to search · ↑↓ move · space toggles · enter saves)",
+    ).ask()
     if picked is None:  # Ctrl-C
         console.print("[dim]Cancelled — selection unchanged.[/dim]")
         raise typer.Exit(0)
