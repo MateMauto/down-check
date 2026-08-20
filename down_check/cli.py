@@ -74,13 +74,21 @@ def check(
             help="Skip status pages, go straight to user reports.",
         ),
     ] = False,
+    every: Annotated[
+        bool,
+        typer.Option(
+            "--all",
+            "-a",
+            help="Check the whole catalog, ignoring your selection.",
+        ),
+    ] = False,
 ) -> None:
     """Check your selected services. Anything not OK is cross-checked against user reports."""
-    services = selected_services()
+    services = load_catalog() if every else selected_services()
     if not services:
         console.print(
             "[yellow]No services selected.[/yellow] "
-            "Run [bold]down-check list[/bold] first."
+            "Run [bold]down-check list[/bold] first, or [bold]down-check check --all[/bold]."
         )
         raise typer.Exit(1)
 
