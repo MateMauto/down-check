@@ -1,8 +1,13 @@
 # down-check
 
-> Is it you, or is the service down? A tiny CLI that checks the services you care about.
+[![Python](https://img.shields.io/badge/python-3.10+-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
+[![Services](https://img.shields.io/badge/services-44-8b5cf6?style=flat-square)](down_check/services.yaml)
 
-```
+Is it you, or is the service down? A tiny CLI that checks the services you care about — two
+commands, no config, no daemon.
+
+```console
 $ down-check check
 
 Service        Status      Detail
@@ -15,138 +20,93 @@ Stripe         ● OK        All Systems Operational
 
 4 ok  ·  3 degraded  (status page)
 
-Service        Status     Detail
-Grafana Cloud  · UNKNOWN  No user-report page known
-AWS            · UNKNOWN  No user-report page known
-Slack          ● OK       No problems detected
-
-1 ok  ·  2 unknown  (user reports)
-
 Look here:
 Grafana Cloud  https://status.grafana.com
 AWS            https://health.aws.amazon.com/health/status
                https://downdetector.com/status/aws-amazon-web-services/
 ```
 
-Two commands, no config, no daemon.
+🟢 `OK` all is well · 🟡 `DEGRADED` known incident or partial outage · 🔴 `DOWN` major outage ·
+⚪ `UNKNOWN` couldn't read it, here's the link
 
 ## Install
 
-Requires Python 3.10 or newer. The goal is to have `down-check` on your PATH, so you can run it
-from any directory the moment something feels off.
-
-### With uv (recommended)
+Requires Python 3.10+. The point is to have `down-check` on your PATH, ready from any directory.
 
 ```bash
-uv tool install git+https://github.com/MateMauto/down-check
+# with uv (recommended)
+uv tool install git+https://github.com/MateMauto/down-check && down-check list
+
+# with pipx
+pipx install git+https://github.com/MateMauto/down-check && down-check list
 ```
 
-### With pipx
+The second half drops you into the picker, so you're set up in one paste. Both tools isolate
+down-check's dependencies and link the executable into `~/.local/bin`. Missing them? macOS:
+`brew install uv`. Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
 
-```bash
-pipx install git+https://github.com/MateMauto/down-check
-```
+`pip install --user git+https://github.com/MateMauto/down-check` also works, but shares your user
+site-packages with everything else.
 
-Either one installs the CLI into its own isolated environment and links the executable into your
-PATH (`~/.local/bin` by default), so down-check's dependencies can never collide with another
-project's. Don't have either? On macOS, `brew install uv` or `brew install pipx`; on Linux,
-`curl -LsSf https://astral.sh/uv/install.sh | sh`.
+> [!NOTE]
+> Not on PyPI yet — once it is, `uv tool install down-check` becomes the whole story.
 
-### With pip
+To hack on it, clone and `uv tool install --editable .` — edits to `services.yaml` then apply on the
+next run, with no reinstall.
 
-```bash
-pip install --user git+https://github.com/MateMauto/down-check
-```
+**`command not found`?** Run `uv tool update-shell` or `pipx ensurepath`, then open a new terminal.
+For `pip install --user`, add the directory from `python3 -m site --user-base` (plus `/bin`) to your
+PATH.
 
-Works, but shares your user site-packages with everything else you have pip-installed.
+**Old OpenSSL?** The three scraped AI pages (Grok, Mistral, DeepSeek) sit behind TLS-fingerprint bot
+protection that rejects OpenSSL 1.1.1 and 3.0 outright, so they report `UNKNOWN` no matter what the
+service is doing. Check with `python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"`; if it's old,
+install onto a newer interpreter with `uv tool install --python 3.12 …`.
 
-> **Not on PyPI yet.** Once it is published, `uv tool install down-check` — no git URL — becomes
-> the whole story.
-
-### From a clone, to hack on it
-
-```bash
-git clone https://github.com/MateMauto/down-check.git
-cd down-check
-uv tool install --editable .      # or: pipx install --editable .
-```
-
-Editable means your edits to `services.yaml` take effect on the next run, with no reinstall.
-
-### Check it worked
-
-```bash
-cd ~                  # anywhere at all
-down-check --help
-down-check list       # pick your services, once
-down-check check
-```
-
-### `command not found: down-check`
-
-The executable landed somewhere that is not on your PATH. Fix it once, then open a new terminal:
-
-```bash
-uv tool update-shell      # uv
-pipx ensurepath           # pipx
-```
-
-For `pip install --user`, add the directory printed by `python3 -m site --user-base` (plus `/bin`)
-to your PATH in `~/.zshrc` or `~/.bashrc`.
-
-### Upgrading and removing
-
-```bash
-uv tool upgrade down-check          # or: pipx upgrade down-check
-uv tool uninstall down-check        # or: pipx uninstall down-check
-rm -rf ~/.down-check                # also forgets which services you picked
-```
+Upgrade with `uv tool upgrade down-check`, remove with `uv tool uninstall down-check`
+(and `rm -rf ~/.down-check` to forget your picks).
 
 ## Use
 
 ### `down-check list`
 
-Interactive checkbox picker over the built-in catalog.
-
-**Just type** to search by name — with 44 services, filtering to `graf` beats arrowing past 20 rows.
-**Space** toggles, **↑↓** moves, **Backspace** narrows the search, **Enter** saves.
-
-Your selection is stored in `~/.down-check/selection.json`.
+Interactive picker over the catalog. **Just type** to search by name — with 44 services, filtering
+to `graf` beats arrowing past 20 rows. <kbd>Space</kbd> toggles, <kbd>↑</kbd><kbd>↓</kbd> moves,
+<kbd>Enter</kbd> saves, to `~/.down-check/selection.json`.
 
 ### `down-check check`
 
-Checks everything you selected, concurrently, against its official status page. Anything that
-is not clearly OK gets cross-checked against what users are reporting, and you get the links
-to look at yourself.
+Checks your selection concurrently against official status pages. Anything not clearly OK is
+cross-checked against user reports, and you get the links to look at yourself.
 
 ```bash
-down-check check        # status pages, with user reports as fallback
-down-check check -r     # skip status pages, go straight to user reports
+down-check check          # status pages, with user reports as fallback
+down-check check --all    # the whole catalog, ignoring your selection  (-a)
+down-check check -r       # skip status pages, go straight to user reports
 ```
+
+`--all` is the "is the whole internet on fire?" button. It doesn't change what you picked.
 
 ## Where the numbers come from
 
-**Official status pages** are the primary signal — an Atlassian Statuspage `status.json` for most
-services, plus purpose-built readers for the AWS health feed, the Google Cloud incident feed, the
-Azure status feed, and Slack's own API.
+**Official status pages** are the primary signal — an Atlassian Statuspage `status.json` for most,
+plus purpose-built readers for the AWS, Google Cloud, Google Workspace and Azure feeds, Status.io,
+Instatus, Meta's product feed, and Slack's own API.
 
-**User reports** come from [istheservicedown.com](https://istheservicedown.com), which answers
-plain HTTP requests. This is the fallback for when a status page insists everything is fine and
-your gut says otherwise. Coverage is consumer-leaning: about a third of the catalog has a page there.
+**User reports** come from [istheservicedown.com](https://istheservicedown.com), for when a status
+page insists everything is fine and your gut says otherwise. Coverage is consumer-leaning: about a
+third of the catalog has a page there.
 
-**Scraped pages.** A few services (Grok, Mistral, DeepSeek) publish no API, so down-check matches
-phrases against their status banner. If a redesign breaks the match, the result is `UNKNOWN` with a
-link — never a false `OK`.
+**Scraped pages.** Grok, Mistral and DeepSeek publish no API, so down-check matches phrases against
+their status banner. If a redesign breaks the match you get `UNKNOWN` and a link — never a false `OK`.
 
-**Downdetector** is linked, never fetched. It sits behind a bot check that returns 403 to any
-plain HTTP client, so down-check hands you the URL rather than pretending to have read it.
+**Downdetector** is linked, never fetched: it returns 403 to any plain HTTP client, so down-check
+hands you the URL rather than pretending to have read it.
 
 ## The catalog
 
-Everything lives in [`down_check/services.yaml`](down_check/services.yaml) — 44 services across
-dev tools, cloud & hosting, AI, communication, productivity, payments, and media.
-
-Adding one is a few lines:
+44 services in [`down_check/services.yaml`](down_check/services.yaml), across dev tools, cloud,
+AI, communication, productivity, payments and media. Adding one is a few lines:
 
 ```yaml
 - id: my-api
@@ -158,9 +118,9 @@ Adding one is a few lines:
   downdetector: my-api   # optional, link only
 ```
 
-`api` defaults to the Atlassian Statuspage schema. Set `kind` to `aws`, `gcp`, `azure`, `slack`, `statusio`,
-`instatus`, or `meta` for services with their own feed, or `html` (plus a `match:` block of phrases)
-for the handful that publish no API at all.
+`api` defaults to the Atlassian Statuspage schema. Set `kind` to `aws`, `gcp`, `azure`, `slack`,
+`statusio`, `instatus` or `meta` for services with their own feed, or `html` (plus a `match:` block
+of phrases) for those with no API at all.
 
 ## License
 
