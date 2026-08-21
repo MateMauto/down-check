@@ -31,40 +31,21 @@ AWS            https://health.aws.amazon.com/health/status
 
 ## Install
 
-Requires Python 3.10+. The point is to have `down-check` on your PATH, ready from any directory.
+Requires Python 3.10+ and [uv](https://docs.astral.sh/uv/) (`brew install uv`, or
+`curl -LsSf https://astral.sh/uv/install.sh | sh`).
 
 ```bash
-# with uv (recommended)
 uv tool install git+https://github.com/MateMauto/down-check && down-check list
-
-# with pipx
-pipx install git+https://github.com/MateMauto/down-check && down-check list
 ```
 
-The second half drops you into the picker, so you're set up in one paste. Both tools isolate
-down-check's dependencies and link the executable into `~/.local/bin`. Missing them? macOS:
-`brew install uv`. Linux: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+That installs `down-check` onto your PATH and drops you straight into the picker, so you're set up
+in one paste. `pipx install` works the same way. To hack on it, clone and
+`uv tool install --editable .`.
 
-`pip install --user git+https://github.com/MateMauto/down-check` also works, but shares your user
-site-packages with everything else.
-
-> [!NOTE]
-> Not on PyPI yet — once it is, `uv tool install down-check` becomes the whole story.
-
-To hack on it, clone and `uv tool install --editable .` — edits to `services.yaml` then apply on the
-next run, with no reinstall.
-
-**`command not found`?** Run `uv tool update-shell` or `pipx ensurepath`, then open a new terminal.
-For `pip install --user`, add the directory from `python3 -m site --user-base` (plus `/bin`) to your
-PATH.
-
-**Old OpenSSL?** The three scraped AI pages (Grok, Mistral, DeepSeek) sit behind TLS-fingerprint bot
-protection that rejects OpenSSL 1.1.1 and 3.0 outright, so they report `UNKNOWN` no matter what the
-service is doing. Check with `python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"`; if it's old,
-install onto a newer interpreter with `uv tool install --python 3.12 …`.
-
-Upgrade with `uv tool upgrade down-check`, remove with `uv tool uninstall down-check`
-(and `rm -rf ~/.down-check` to forget your picks).
+```bash
+uv tool upgrade down-check      # update
+uv tool uninstall down-check    # remove  (rm -rf ~/.down-check to forget your picks)
+```
 
 ## Use
 
@@ -121,6 +102,21 @@ AI, communication, productivity, payments and media. Adding one is a few lines:
 `api` defaults to the Atlassian Statuspage schema. Set `kind` to `aws`, `gcp`, `azure`, `slack`,
 `statusio`, `instatus` or `meta` for services with their own feed, or `html` (plus a `match:` block
 of phrases) for those with no API at all.
+
+## Debug
+
+**`command not found: down-check`** — the executable isn't on your PATH. Run `uv tool update-shell`
+(or `pipx ensurepath`), then open a new terminal.
+
+**Grok, Mistral or DeepSeek always `UNKNOWN`** — those three are scraped, and sit behind bot
+protection that rejects old TLS stacks. Check with
+`python3 -c "import ssl; print(ssl.OPENSSL_VERSION)"`; if it's OpenSSL 1.1.1 or 3.0, reinstall onto
+a newer interpreter: `uv tool install --force --python 3.12 git+https://github.com/MateMauto/down-check`.
+
+**Everything `UNKNOWN`** — you're offline, or behind a proxy that intercepts TLS.
+
+**One service `UNKNOWN`, fine on retry** — a timeout under load. down-check never guesses, so a slow
+response reads as unknown rather than OK.
 
 ## License
 

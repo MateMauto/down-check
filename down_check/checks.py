@@ -6,6 +6,7 @@ import html
 import re
 from dataclasses import dataclass
 from enum import Enum
+from importlib import metadata
 from xml.etree import ElementTree
 
 import httpx
@@ -13,7 +14,13 @@ import httpx
 from down_check.catalog import Service
 
 TIMEOUT = httpx.Timeout(10.0, connect=5.0)
-USER_AGENT = "down-check/0.3 (+https://github.com/MateMauto/down-check)"
+
+try:  # running from a checkout, rather than an install, is fine
+    _VERSION = metadata.version("down-check")
+except metadata.PackageNotFoundError:
+    _VERSION = "dev"
+
+USER_AGENT = f"down-check/{_VERSION} (+https://github.com/MateMauto/down-check)"
 
 # istheservicedown.com serves plain HTML, but only to something browser-shaped.
 BROWSER_UA = (
