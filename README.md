@@ -4,26 +4,28 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-22c55e?style=flat-square)](LICENSE)
 [![Services](https://img.shields.io/badge/services-44-8b5cf6?style=flat-square)](down_check/services.yaml)
 
-Is it you, or is the service down? A tiny CLI that checks the services you care about — two
-commands, no config, no daemon.
+Is it you, or is the service down? A tiny CLI that checks the services you care about.
 
 ```console
 $ down-check check
 
 Service        Status      Detail
-GitHub         ● OK        All Systems Operational
-Grafana Cloud  ◐ DEGRADED  Service Under Maintenance
 AWS            ◐ DEGRADED  Increased Packet loss — AWS Direct Connect (Frankfurt)
+GitHub         ● OK        All Systems Operational
 Google Cloud   ● OK        No open incidents
+Grafana Cloud  ◐ DEGRADED  Service Under Maintenance
 Slack          ◐ DEGRADED  Trouble Accessing Historical Messages
 Stripe         ● OK        All Systems Operational
 
-4 ok  ·  3 degraded  (status page)
+3 ok  ·  3 degraded  (status page)
 
 Look here:
-Grafana Cloud  https://status.grafana.com
 AWS            https://health.aws.amazon.com/health/status
                https://downdetector.com/status/aws-amazon-web-services/
+Grafana Cloud  https://status.grafana.com
+Slack          https://slack-status.com
+               https://istheservicedown.com/problems/slack
+               https://downdetector.com/status/slack/
 ```
 
 🟢 `OK` all is well · 🟡 `DEGRADED` known incident or partial outage · 🔴 `DOWN` major outage ·
@@ -51,9 +53,9 @@ uv tool uninstall down-check    # remove  (rm -rf ~/.down-check to forget your p
 
 ### `down-check list`
 
-Interactive picker over the catalog. **Just type** to search by name — with 44 services, filtering
-to `graf` beats arrowing past 20 rows. <kbd>Space</kbd> toggles, <kbd>↑</kbd><kbd>↓</kbd> moves,
-<kbd>Enter</kbd> saves, to `~/.down-check/selection.json`.
+Interactive picker over the catalog. **Just type** to search by name (currently 44 services), 
+filtering to `graf` beats arrowing past 20 rows. <kbd>Space</kbd> toggles, <kbd>↑</kbd><kbd>↓</kbd> 
+moves, <kbd>Enter</kbd> saves, to `~/.down-check/selection.json`.
 
 ### `down-check check`
 
@@ -66,23 +68,22 @@ down-check check --all    # the whole catalog, ignoring your selection  (-a)
 down-check check -r       # skip status pages, go straight to user reports
 ```
 
-`--all` is the "is the whole internet on fire?" button. It doesn't change what you picked.
-
 ## Where the numbers come from
 
-**Official status pages** are the primary signal — an Atlassian Statuspage `status.json` for most,
+**Official status pages** are the primary signal, an Atlassian Statuspage `status.json` for most,
 plus purpose-built readers for the AWS, Google Cloud, Google Workspace and Azure feeds, Status.io,
 Instatus, Meta's product feed, and Slack's own API.
 
 **User reports** come from [istheservicedown.com](https://istheservicedown.com), for when a status
-page insists everything is fine and your gut says otherwise. Coverage is consumer-leaning: about a
-third of the catalog has a page there.
+page insists everything is fine and your gut says otherwise. Coverage is consumer-leaning, so only
+about a third of the catalog has a page there.
 
 **Scraped pages.** Grok, Mistral and DeepSeek publish no API, so down-check matches phrases against
-their status banner. If a redesign breaks the match you get `UNKNOWN` and a link — never a false `OK`.
+their status banner. If a redesign breaks the match you get `UNKNOWN` and a link (to try and avoid 
+a false `OK`).
 
-**Downdetector** is linked, never fetched: it returns 403 to any plain HTTP client, so down-check
-hands you the URL rather than pretending to have read it.
+**Downdetector** is linked but never fetched. It returns 403 to any plain HTTP client, so down-check
+just hands you the URL if you want to check it out.
 
 ## The catalog
 
