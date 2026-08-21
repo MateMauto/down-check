@@ -85,6 +85,8 @@ def check(
 ) -> None:
     """Check your selected services. Anything not OK is cross-checked against user reports."""
     services = load_catalog() if every else selected_services()
+
+    services.sort(key=lambda s: s.name.casefold())
     if not services:
         console.print(
             "[yellow]No services selected.[/yellow] "
