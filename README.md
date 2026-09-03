@@ -68,6 +68,18 @@ down-check check --all    # the whole catalog, ignoring your selection  (-a)
 down-check check -r       # skip status pages, go straight to user reports
 ```
 
+### `down-check serve`
+
+Serve the same status view as a plain-HTML web page on your LAN — no JavaScript, no frameworks.
+Run it on your computer, then open `http://<your-ip>:8000` on any device (phone included) to see the
+table `down-check check` prints, plus a **Refresh** button.
+
+```bash
+down-check serve          # your selected services, on port 8000 (all interfaces)
+down-check serve --all    # the whole catalog  (-a)
+down-check serve --port 8080
+```
+
 ## Where the numbers come from
 
 **Official status pages** are the primary signal, an Atlassian Statuspage `status.json` for most,

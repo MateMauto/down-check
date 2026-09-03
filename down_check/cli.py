@@ -10,6 +10,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
+from down_check import web
 from down_check.catalog import (
     by_category,
     load_catalog,
@@ -160,5 +161,40 @@ def _render_links(results: list[Result]) -> None:
     console.print()
 
 
+@app.command()
+def serve(
+    every: Annotated[
+        bool,
+        typer.Option(
+            "--all",
+            "-a",
+            help="Check the whole catalog, ignoring your selection.",
+        ),
+    ] = False,
+    host: Annotated[str, typer.Option(help="Address to bind to.")] = web.DEFAULT_HOST,
+    port: Annotated[
+        int,
+        typer.Option(
+            "-p",
+            "--port",
+            help="Port to listen on.",
+        ),
+    ] = web.DEFAULT_PORT,
+) -> None:
+    """Serve the status page as a web view — open it on any device on your network."""
+    services = load_catalog() if every else selected_services()
+    services.sort(key=lambda s: s.name.casefold())
+    if not services:
+        console.print(
+            "[yellow]No services selected.[/yellow] "
+            "Run [bold]down-check list[/bold] first, or [bold]down-check serve --all[/bold]."
+        )
+        raise typer.Exit(1)
+    web.serve(services, host=host, port=port)
+
+
 def main() -> None:  # console-script entry point
     app()
+
+if __name__ == "__main__":
+    main()
